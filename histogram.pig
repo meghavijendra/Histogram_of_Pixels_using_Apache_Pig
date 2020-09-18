@@ -1,0 +1,12 @@
+Histogram = LOAD '$P' USING PigStorage(',') AS (red:long, green:long, blue:long);
+group_red = group Histogram by red;
+group_green = group Histogram by green;
+group_blue = group Histogram by blue;
+o_red = foreach group_red generate 1, $0, COUNT($1);
+o_green = foreach group_green generate 2, $0, COUNT($1);
+o_blue = foreach group_blue generate 3, $0, COUNT($1);
+uni = UNION o_red, o_green, o_blue;
+res = GROUP uni BY 1 parallel 1;
+out1 = FOREACH res GENERATE FLATTEN(uni);
+out1 = ORDER out1 BY $0;
+STORE out1 into '$O' USING PigStorage(' ');
